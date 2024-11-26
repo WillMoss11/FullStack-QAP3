@@ -1,0 +1,293 @@
+/* General reset for consistency */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Enhanced heading styles */
+h1 {
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-align: center;
+  color: #007BFF; /* Bright blue color */
+  text-shadow: 2px 2px 8px rgba(0, 123, 255, 0.5);
+  margin-bottom: 15px;
+  animation: fadeInUp 1s ease-out;
+}
+
+h1 span {
+  color: #FFD700; /* Gold color */
+  font-size: 2.8rem;
+  font-weight: bolder;
+  text-shadow: 2px 2px 8px rgba(255, 215, 0, 0.7);
+}
+
+/* Paragraph styling below heading */
+h2, p {
+  text-align: center;
+  font-size: 1.2rem;
+  color: #555;
+  margin-bottom: 20px;
+  font-weight: 400;
+}
+
+/* Animation for heading */
+@keyframes fadeInUp {
+  from {
+      opacity: 0;
+      transform: translateY(50px);
+  }
+  to {
+      opacity: 1;
+      transform: translateY(0);
+  }
+}
+
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f0f4f8;
+  color: #333;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+/* Header styling */
+header {
+  background-color: #007BFF;
+  color: white;
+  padding: 20px 0;
+  text-align: center;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+  font-size: 2.5rem;
+  margin-bottom: 10px;
+}
+
+header p {
+  font-size: 1rem;
+}
+
+nav {
+  background-color: #0056b3;
+  text-align: center;
+  padding: 10px 0;
+  border-bottom: 2px solid #003366; /* Darker bottom border */
+}
+
+nav a {
+  color: white;
+  margin: 0 15px;
+  text-decoration: none;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+nav a:hover {
+  color: #ffd700;
+}
+
+/* Main container */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Form styling */
+form {
+  background: #ffffff;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  max-width: 500px;
+  margin: 0 auto;
+  animation: fadeInUp 1s ease-out;
+}
+
+form input, form button {
+  width: 100%;
+  padding: 15px;
+  margin: 10px 0;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  font-size: 1rem;
+}
+
+form button {
+  background-color: #007BFF;
+  color: white;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+form button:hover {
+  background-color: #0056b3;
+}
+
+form .error-message {
+  color: #ff4747;
+  font-size: 0.9rem;
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+form input:focus, form button:focus {
+  outline: none;
+  border-color: #0056b3;
+}
+
+form input[type="text"],
+form input[type="password"],
+form input[type="email"] {
+  font-size: 1rem;
+}
+
+/* Footer styling */
+footer {
+  background-color: #333;
+  padding: 20px;
+  text-align: center;
+  position: fixed;
+  width: 100%;
+  bottom: 0;
+  box-shadow: 0px -4px 10px rgba(0, 0, 0, 0.1);
+}
+
+footer p {
+  font-size: 1rem;
+  color: white;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .container {
+      padding: 15px;
+  }
+
+  header h1 {
+      font-size: 2rem;
+  }
+
+  nav a {
+      margin: 0 10px;
+      font-size: 0.9rem;
+  }
+
+  form {
+      padding: 20px;
+  }
+
+  form input, form button {
+      font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 480px) {
+  header h1 {
+      font-size: 1.8rem;
+  }
+
+  nav a {
+      margin: 0 8px;
+      font-size: 0.8rem;
+  }
+
+  form {
+      padding: 15px;
+  }
+
+  form input, form button {
+      font-size: 0.85rem;
+  }
+}
+
+/* General admin page styling */
+body.admin-page {
+  background-color: #fc7c7c; /* Deep red for admin background */
+  color: #fff;
+  font-family: 'Arial', sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* User list container */
+.admin-page .user-list {
+  max-width: 600px;
+  margin: 30px auto; /* Center the user list */
+  background: #d3d3d3; /* Light gray background */
+  padding: 20px;
+  border-radius: 10px; /* Rounded corners */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Slight shadow */
+  text-align: center;
+}
+
+/* "Users List" heading box */
+.admin-page .user-list h2 {
+  background: #d3d3d3; /* Light gray background for the heading */
+  color: #333; /* Dark text for contrast */
+  padding: 10px;
+  margin-bottom: 15px; /* Spacing below the heading */
+  border-radius: 8px; /* Rounded corners for consistency */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Light shadow */
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+/* Users inside the list */
+.admin-page .user-list ul {
+  list-style: none; /* Remove bullets */
+  padding: 0;
+  margin: 0;
+  display: flex; /* Use flexbox for alignment */
+  flex-direction: column; /* Stack items vertically */
+  gap: 15px; /* Space between items */
+}
+
+/* Each user box */
+.admin-page .user-list ul li {
+  background: #f0f0f0; /* Light gray background for each user */
+  color: #333; /* Dark text for contrast */
+  padding: 15px;
+  border-radius: 8px; /* Rounded corners */
+  text-align: center;
+  font-size: 1.1rem;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2); /* Light shadow for boxes */
+  transition: transform 0.3s ease;
+}
+
+/* Hover effect for user boxes */
+.admin-page .user-list ul li:hover {
+  transform: translateY(-3px); /* Slight lift on hover */
+}
+
+/* Buttons for admin actions */
+.admin-page button {
+  background-color: #ffd700; /* Gold buttons */
+  color: #000000; /* Dark red text */
+  border: none;
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+.admin-page button:hover {
+  background-color: #ffc107; /* Brighter gold */
+  transform: scale(1.05); /* Slight enlargement on hover */
+}
+
+/* Footer styling for admin page */
+footer.admin-footer {
+  background-color: #b17676;
+  color: #fff;
+  padding: 10px;
+  text-align: center;
+}
+
