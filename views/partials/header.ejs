@@ -1,17 +1,23 @@
-<header>
-  <nav>
-      <ul>
-          <li><a href="/">Home</a></li>
-          <% if (user) { %> <!-- Check if user is logged in -->
-              <li><a href="/logout">Logout</a></li>
-              <% if (user.role === 'admin') { %>
-                  <li><a href="/admin">Admin Dashboard</a></li>
+<head>
+  <meta charset="UTF-8">
+  <title><%= title || "Your App" %></title>
+  <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+  <header>
+      <nav>
+          <ul>
+              <li><a href="/">Home</a></li>
+              <% if (user) { %> <!-- Check if user is logged in -->
+                  <% if (user.role === 'admin') { %> <!-- Check if user is an admin -->
+                      <li><a href="/admin">Admin</a></li>
+                  <% } %>
+                  <li><a href="/logout">Logout</a></li>
+              <% } else { %> <!-- If not logged in -->
+                  <li><a href="/login">Login</a></li>
+                  <li><a href="/signup">Sign Up</a></li>
               <% } %>
-          <% } else { %> <!-- If not logged in -->
-              <li><a href="/login">Login</a></li>
-              <li><a href="/signup">Sign Up</a></li>
-          <% } %>
-      </ul>
-  </nav>
-</header>
-
+          </ul>
+      </nav>
+  </header>
+</body>

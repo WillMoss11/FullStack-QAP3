@@ -1,25 +1,17 @@
 <%- include('partials/header', { title: "Admin Dashboard", user: user || null }) %>
 
-<h1>Admin Dashboard</h1>
+<body class="admin-page"> <!-- Add the class 'admin-page' here -->
 
-<h2>All Users</h2>
-<table>
-    <thead>
-        <tr>
-            <th>Username</th>
-            <th>Email</th>
-            <th>Role</th>
-        </tr>
-    </thead>
-    <tbody>
-        <% users.forEach(user => { %>
-            <tr>
-                <td><%= user.username %></td>
-                <td><%= user.email %></td>
-                <td><%= user.role %></td>
-            </tr>
-        <% }) %>
-    </tbody>
-</table>
+<h1>Admin Dashboard</h1>
+<p>Welcome, <%= user.username %>! You have admin privileges.</p>
+
+<div class="user-list">
+    <h2>Users List</h2>
+    <ul>
+      <% users.forEach(u => { %>
+        <li><%= u.username %> - <%= u.role %></li>
+      <% }) %>
+    </ul>
+  </div>  
 
 <%- include('partials/footer') %>
