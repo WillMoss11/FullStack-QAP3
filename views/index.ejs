@@ -1,17 +1,7 @@
-<%- include('partials/header', { title: "Home" }) %>
+<%- include('partials/header', { title: "Home", user: user }) %>
 <h1>Authentication Practice</h1>
-
-<!-- Display a welcome message if the user is logged in -->
-<% if (user) { %>
-    <h2>Welcome, <%= user.username %>!</h2>
-    <button onclick="window.location.href='/landing'">Go to Dashboard</button>
-    <button onclick="window.location.href='/logout'">Logout</button>
-<% } else { %>
-    <span class="index-button-container">
-        <button onclick="window.location.href='/login'">Login</button>
-        <button onclick="window.location.href='/signup'">Sign Up</button>
-    </span>
-<% } %>
-
+<span class="index-button-container">
+    <button onclick="window.location.href='/login'">Login</button>
+    <button onclick="window.location.href='/signup'">Sign Up</button>
+</span>
 <%- include('partials/footer') %>
-

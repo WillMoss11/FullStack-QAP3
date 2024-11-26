@@ -1,31 +1,12 @@
 const express = require("express");
 const path = require("path");
-const session = require("express-session");
 const bcrypt = require("bcrypt");
+const session = require("express-session");
 
 const app = express();
 const PORT = 3000;
 const SALT_ROUNDS = 10;
 
-// In-memory user storage (could later be replaced by a database)
-let USERS = [
-    {
-        id: 1,
-        username: "AdminUser",
-        email: "admin@example.com",
-        password: bcrypt.hashSync("admin123", SALT_ROUNDS), // Pre-hashed for demo purposes
-        role: "admin", // Admin role
-    },
-    {
-        id: 2,
-        username: "RegularUser",
-        email: "user@example.com",
-        password: bcrypt.hashSync("user123", SALT_ROUNDS),
-        role: "user", // Regular user
-    },
-];
-
-// Middleware for parsing data and serving static files
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, "public")));
 app.use(
@@ -36,113 +17,113 @@ app.use(
     })
 );
 
-// Set view engine to EJS
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// Helper function to find user by email
-const findUserByEmail = (email) => {
-    return USERS.find((user) => user.email === email);
-};
+// In-memory store of users (no database)
+const USERS = [
+    {
+        id: 1,
+        username: "AdminUser",
+        email: "admin@example.com",
+        password: bcrypt.hashSync("admin123", SALT_ROUNDS),
+        role: "admin",
+    },
+    {
+        id: 2,
+        username: "RegularUser",
+        email: "user@example.com",
+        password: bcrypt.hashSync("user123", SALT_ROUNDS),
+        role: "user",
+    },
+];
 
 // GET /login - Render login form
 app.get("/login", (request, response) => {
-    response.render("login");
+    response.render("login", { user: request.session.user || null });
 });
 
-// POST /login - Handle user login
+// POST /login - Allows a user to login
 app.post("/login", (request, response) => {
     const { email, password } = request.body;
+    const user = USERS.find((user) => user.email === email);
 
-    // Find user by email
-    const user = findUserByEmail(email);
-
-    if (!user) {
-        return response.status(400).send("Invalid credentials!");
+    if (user && bcrypt.compareSync(password, user.password)) {
+        // Save user to session
+        request.session.user = user;
+        return response.redirect("/landing");
     }
 
-    // Compare passwords
-    bcrypt.compare(password, user.password, (err, isMatch) => {
-        if (err || !isMatch) {
-            return response.status(400).send("Invalid credentials!");
-        }
-
-        // Store user session data
-        request.session.user = user;
-        response.redirect("/landing");
-    });
+    response.render("login", { error: "Invalid email or password", user: request.session.user || null });
 });
 
 // GET /signup - Render signup form
 app.get("/signup", (request, response) => {
-    response.render("signup");
+    // Pass `error` if any and also pass `user` to handle it in the header
+    response.render("signup", { user: request.session.user || null, error: null });
 });
 
-// POST /signup - Handle user signup
+// POST /signup - Allows a user to signup
 app.post("/signup", (request, response) => {
-    const { username, email, password } = request.body;
+    const { email, username, password } = request.body;
 
-    // Check if the user already exists
-    const existingUser = findUserByEmail(email);
-    if (existingUser) {
-        return response.status(400).send("User already exists!");
+    // Check if email already exists
+    if (USERS.some((user) => user.email === email)) {
+        return response.render("signup", { 
+            error: "Email already exists", 
+            user: request.session.user || null 
+        });
     }
 
-    // Hash the password before storing it
-    bcrypt.hash(password, SALT_ROUNDS, (err, hashedPassword) => {
-        if (err) {
-            return response.status(500).send("Error hashing password.");
-        }
+    const hashedPassword = bcrypt.hashSync(password, SALT_ROUNDS);
+    const newUser = {
+        id: USERS.length + 1,
+        username,
+        email,
+        password: hashedPassword,
+        role: "user", // default to regular user
+    };
 
-        // Create a new user and add it to the USERS array
-        const newUser = {
-            id: USERS.length + 1,  // Simple ID generation (for now)
-            username,
-            email,
-            password: hashedPassword,
-            role: "user",  // Regular user role
-        };
+    USERS.push(newUser);
 
-        USERS.push(newUser);
-        response.redirect("/login");
-    });
+    // Log the user in after registration
+    request.session.user = newUser;
+    response.redirect("/landing");
 });
 
-// GET / - Home page or redirect to landing if logged in
+// GET / - Render index page or redirect to landing if logged in
 app.get("/", (request, response) => {
     if (request.session.user) {
         return response.redirect("/landing");
     }
-    response.render("index");
+    response.render("index", { user: request.session.user || null });
 });
 
-// GET /landing - User landing page (dashboard)
+// GET /landing - Shows a welcome page for users, shows the names of all users if an admin
 app.get("/landing", (request, response) => {
     if (!request.session.user) {
         return response.redirect("/login");
     }
 
-    const user = request.session.user;
-    if (user.role === "admin") {
-        // Admin view: list all users
-        return response.render("landing", { users: USERS });
-    } else {
-        // Regular user view: show username and basic dashboard
-        return response.render("landing", { user });
+    const currentUser = request.session.user;
+    if (currentUser.role === "admin") {
+        return response.render("landing", { user: currentUser, users: USERS });
     }
+
+    response.render("landing", { user: currentUser });
 });
 
-// GET /logout - Log the user out
+// GET /logout - Logs the user out
 app.get("/logout", (request, response) => {
     request.session.destroy((err) => {
         if (err) {
-            return response.status(500).send("Error logging out.");
+            return response.status(500).send("Could not log out");
         }
         response.redirect("/");
     });
 });
 
-// Start the server
+// Start server
 app.listen(PORT, () => {
     console.log(`Server running at http://localhost:${PORT}`);
 });

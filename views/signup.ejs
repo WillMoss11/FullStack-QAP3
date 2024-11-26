@@ -1,20 +1,5 @@
-<%- include('partials/header', { title: "Sign Up" }) %>
+<%- include('partials/header', { title: "Sign Up", user: user }) %>
 <h1>Sign Up</h1>
-
-<!-- Display error message if there's one -->
-<% if (error) { %>
-    <div style="color: red; font-weight: bold;">
-        <%= error %>
-    </div>
-<% } %>
-
-<!-- Display success message if signup is successful -->
-<% if (message) { %>
-    <div style="color: green; font-weight: bold;">
-        <%= message %>
-    </div>
-<% } %>
-
 <form action="/signup" method="POST">
     <div class="form-input-container">
         <label for="email">Email:</label>
@@ -31,7 +16,9 @@
     <button type="submit">Sign Up</button>
 </form>
 
-<p>Already have an account? <a href="/login">Log in here</a></p>
-<p><a href="/">Go back to Home</a></p>
+<% if (error) { %>
+    <p style="color: red;"><%= error %></p>
+<% } %>
 
+<p><a href="/">Go back</a></p>
 <%- include('partials/footer') %>
