@@ -6,92 +6,121 @@ const bcrypt = require("bcryptjs");
 const app = express();
 const port = 3000;
 
+// Use EJS as the view engine
 app.set("view engine", "ejs");
-app.set("views", path.join(__dirname, "views"));
+app.set("views", path.join(__dirname, "views")); // Ensure views directory is correctly set
 
+// Middleware to parse form data
 app.use(express.urlencoded({ extended: true }));
+
+// Serve static files (like CSS) from the public folder
 app.use(express.static(path.join(__dirname, "public")));
 
+// Session middleware
 app.use(session({
-    secret: "your_secret_key", 
+    secret: "your_secret_key", // Change this to a random secret
     resave: false,
     saveUninitialized: true
 }));
 
-let users = []; // In a real app, use a database
+// Dummy user data (for demo purposes)
+let users = [
+    // Admin user for testing
+    { username: "admin", email: "admin@example.com", password: "adminpassword", role: "admin" }
+];
 
+// Middleware to pass `user` session data to views
 app.use((req, res, next) => {
-    res.locals.user = req.session.user || null;
+    res.locals.user = req.session.user || null;  // Add user to locals for all views
     next();
 });
 
-// Middleware to check for admin role
+// Middleware to check if the user is an admin
 function isAdmin(req, res, next) {
     if (req.session.user && req.session.user.role === 'admin') {
-        return next();
+        return next();  // If user is an admin, proceed
     } else {
-        return res.redirect("/");
+        res.redirect("/");  // Redirect to homepage if not an admin
     }
 }
 
 // Routes
 app.get("/", (req, res) => {
-    res.render("index");
-});
-
-app.get("/login", (req, res) => {
-    res.render("login", { errorMessage: null });
+    res.render("index"); // Renders index.ejs
 });
 
 app.post("/login", (req, res) => {
-    const { email, password } = req.body;
-    const user = users.find(u => u.email === email);
+  const { email, password } = req.body;
 
-    if (!user) {
-        return res.render("login", { errorMessage: "Account not found." });
-    }
+  // Check if the email and password are "admin@admin.com" and "admin"
+  if (email === "admin@admin.com" && password === "admin") {
+      // Create a user object with admin role
+      const adminUser = { email: "admin@admin.com", username: "Admin", role: "admin" };
+      req.session.user = adminUser;  // Set the admin user in session
+      return res.redirect("/admin"); // Redirect to the admin page after logging in
+  }
 
-    bcrypt.compare(password, user.password, (err, result) => {
-        if (err || !result) {
-            return res.render("login", { errorMessage: "Invalid credentials." });
-        }
-        req.session.user = user;
-        res.redirect("/");
-    });
+  // Otherwise, check for the regular user
+  const user = users.find(u => u.email === email);
+
+  if (!user) {
+      return res.render("login", { errorMessage: "Account not found." });
+  }
+
+  bcrypt.compare(password, user.password, (err, result) => {
+      if (err || !result) {
+          return res.render("login", { errorMessage: "Invalid credentials." });
+      }
+      req.session.user = user; // Set the logged-in user in session
+      res.redirect("/");  // Redirect to the homepage after successful login
+  });
+});
+
+
+app.get("/login", (req, res) => {
+  res.render("login", { errorMessage: null }); // This should render the login page
 });
 
 app.get("/signup", (req, res) => {
-    res.render("signup", { errorMessage: null });
+    res.render("signup", { errorMessage: null }); // Pass null if no error
 });
 
 app.post("/signup", (req, res) => {
-    const { username, email, password } = req.body;
-    const existingUser = users.find(u => u.email === email);
-    if (existingUser) {
-        return res.render("signup", { errorMessage: "Email is already registered." });
-    }
+  const { username, email, password } = req.body;
 
-    bcrypt.hash(password, 10, (err, hashedPassword) => {
-        if (err) {
-            return res.render("signup", { errorMessage: "Error hashing password." });
-        }
+  const existingUser = users.find(u => u.email === email);
+  if (existingUser) {
+      return res.render("signup", { errorMessage: "Email is already registered." });
+  }
 
-        const newUser = { username, email, password: hashedPassword, role: 'user' }; // Default role
-        users.push(newUser);
-        req.session.user = newUser;
-        res.redirect("/");
-    });
+  bcrypt.hash(password, 10, (err, hashedPassword) => {
+      if (err) {
+          return res.render("signup", { errorMessage: "Error hashing password." });
+      }
+
+      // Set role as 'user' by default
+      const newUser = { username, email, password: hashedPassword, role: "user" };
+      users.push(newUser);  // In a real app, save to a database
+      req.session.user = newUser;
+      res.redirect("/");  // Redirect to homepage after successful signup
+  });
+});
+
+// Admin page route
+app.get("/admin", (req, res) => {
+  if (req.session.user && req.session.user.role === "admin") {
+      // If the user is logged in and is an admin, pass the 'users' array
+      res.render("admin", { users: users });  // Pass the users array to the view
+  } else {
+      // If the user is not an admin, redirect to the homepage
+      res.redirect("/");
+  }
 });
 
 app.get("/logout", (req, res) => {
     req.session.destroy(() => {
-        res.redirect("/");
+        res.redirect("/");  // Redirect to home page after logout
     });
-});
-
-// Admin route (only accessible by admins)
-app.get("/admin", isAdmin, (req, res) => {
-    res.render("admin", { users });
 });
 
 app.listen(port, () => {
