@@ -1,7 +1,11 @@
-<%- include('partials/header', { title: "Home", user: user }) %>
-<h1>Authentication Practice</h1>
-<span class="index-button-container">
-    <button onclick="window.location.href='/login'">Login</button>
-    <button onclick="window.location.href='/signup'">Sign Up</button>
-</span>
+<%- include('partials/header', { title: "Home", user: user || null }) %>
+
+<% if (user) { %>
+    <h1>Welcome back, <span><%= user.username %></span>!</h1>
+    <p>We're happy to see you again. Enjoy browsing!</p>
+<% } else { %>
+    <h1>Welcome to Our Website</h1>
+    <p>Sign up or log in to get started!</p>
+<% } %>
+
 <%- include('partials/footer') %>

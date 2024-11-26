@@ -1,129 +1,99 @@
 const express = require("express");
 const path = require("path");
-const bcrypt = require("bcrypt");
 const session = require("express-session");
+const bcrypt = require("bcryptjs");
 
 const app = express();
-const PORT = 3000;
-const SALT_ROUNDS = 10;
-
-app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, "public")));
-app.use(
-    session({
-        secret: "replace_this_with_a_secure_key",
-        resave: false,
-        saveUninitialized: true,
-    })
-);
+const port = 3000;
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
-// In-memory store of users (no database)
-const USERS = [
-    {
-        id: 1,
-        username: "AdminUser",
-        email: "admin@example.com",
-        password: bcrypt.hashSync("admin123", SALT_ROUNDS),
-        role: "admin",
-    },
-    {
-        id: 2,
-        username: "RegularUser",
-        email: "user@example.com",
-        password: bcrypt.hashSync("user123", SALT_ROUNDS),
-        role: "user",
-    },
-];
+app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, "public")));
 
-// GET /login - Render login form
-app.get("/login", (request, response) => {
-    response.render("login", { user: request.session.user || null });
+app.use(session({
+    secret: "your_secret_key", 
+    resave: false,
+    saveUninitialized: true
+}));
+
+let users = []; // In a real app, use a database
+
+app.use((req, res, next) => {
+    res.locals.user = req.session.user || null;
+    next();
 });
 
-// POST /login - Allows a user to login
-app.post("/login", (request, response) => {
-    const { email, password } = request.body;
-    const user = USERS.find((user) => user.email === email);
+// Middleware to check for admin role
+function isAdmin(req, res, next) {
+    if (req.session.user && req.session.user.role === 'admin') {
+        return next();
+    } else {
+        return res.redirect("/");
+    }
+}
 
-    if (user && bcrypt.compareSync(password, user.password)) {
-        // Save user to session
-        request.session.user = user;
-        return response.redirect("/landing");
+// Routes
+app.get("/", (req, res) => {
+    res.render("index");
+});
+
+app.get("/login", (req, res) => {
+    res.render("login", { errorMessage: null });
+});
+
+app.post("/login", (req, res) => {
+    const { email, password } = req.body;
+    const user = users.find(u => u.email === email);
+
+    if (!user) {
+        return res.render("login", { errorMessage: "Account not found." });
     }
 
-    response.render("login", { error: "Invalid email or password", user: request.session.user || null });
-});
-
-// GET /signup - Render signup form
-app.get("/signup", (request, response) => {
-    // Pass `error` if any and also pass `user` to handle it in the header
-    response.render("signup", { user: request.session.user || null, error: null });
-});
-
-// POST /signup - Allows a user to signup
-app.post("/signup", (request, response) => {
-    const { email, username, password } = request.body;
-
-    // Check if email already exists
-    if (USERS.some((user) => user.email === email)) {
-        return response.render("signup", { 
-            error: "Email already exists", 
-            user: request.session.user || null 
-        });
-    }
-
-    const hashedPassword = bcrypt.hashSync(password, SALT_ROUNDS);
-    const newUser = {
-        id: USERS.length + 1,
-        username,
-        email,
-        password: hashedPassword,
-        role: "user", // default to regular user
-    };
-
-    USERS.push(newUser);
-
-    // Log the user in after registration
-    request.session.user = newUser;
-    response.redirect("/landing");
-});
-
-// GET / - Render index page or redirect to landing if logged in
-app.get("/", (request, response) => {
-    if (request.session.user) {
-        return response.redirect("/landing");
-    }
-    response.render("index", { user: request.session.user || null });
-});
-
-// GET /landing - Shows a welcome page for users, shows the names of all users if an admin
-app.get("/landing", (request, response) => {
-    if (!request.session.user) {
-        return response.redirect("/login");
-    }
-
-    const currentUser = request.session.user;
-    if (currentUser.role === "admin") {
-        return response.render("landing", { user: currentUser, users: USERS });
-    }
-
-    response.render("landing", { user: currentUser });
-});
-
-// GET /logout - Logs the user out
-app.get("/logout", (request, response) => {
-    request.session.destroy((err) => {
-        if (err) {
-            return response.status(500).send("Could not log out");
+    bcrypt.compare(password, user.password, (err, result) => {
+        if (err || !result) {
+            return res.render("login", { errorMessage: "Invalid credentials." });
         }
-        response.redirect("/");
+        req.session.user = user;
+        res.redirect("/");
     });
 });
 
-// Start server
-app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}`);
+app.get("/signup", (req, res) => {
+    res.render("signup", { errorMessage: null });
+});
+
+app.post("/signup", (req, res) => {
+    const { username, email, password } = req.body;
+    const existingUser = users.find(u => u.email === email);
+    if (existingUser) {
+        return res.render("signup", { errorMessage: "Email is already registered." });
+    }
+
+    bcrypt.hash(password, 10, (err, hashedPassword) => {
+        if (err) {
+            return res.render("signup", { errorMessage: "Error hashing password." });
+        }
+
+        const newUser = { username, email, password: hashedPassword, role: 'user' }; // Default role
+        users.push(newUser);
+        req.session.user = newUser;
+        res.redirect("/");
+    });
+});
+
+app.get("/logout", (req, res) => {
+    req.session.destroy(() => {
+        res.redirect("/");
+    });
+});
+
+// Admin route (only accessible by admins)
+app.get("/admin", isAdmin, (req, res) => {
+    res.render("admin", { users });
+});
+
+app.listen(port, () => {
+    console.log(`Server running on http://localhost:${port}`);
 });
