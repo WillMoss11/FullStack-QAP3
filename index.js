@@ -1,3 +1,5 @@
+// Use Email admin@admin.com & Password admin for Admin login.
+
 const express = require("express");
 const path = require("path");
 const session = require("express-session");
